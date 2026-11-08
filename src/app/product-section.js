@@ -7,18 +7,35 @@ import Link from "next/link";
 export default function ProductSection({ products, categories }) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("default");
 
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory =
-      selectedCategory === "all" ||
-      product.category === selectedCategory;
+  const filteredProducts = products
+    .filter((product) => {
+      const matchesCategory =
+        selectedCategory === "all" ||
+        product.category === selectedCategory;
 
-    const matchesSearch = product.nameBn
-      .toLowerCase()
-      .includes(search.toLowerCase());
+      const matchesSearch = product.nameBn
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-    return matchesCategory && matchesSearch;
-  });
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      if (sortBy === "low-to-high") {
+        return a.today - b.today;
+      }
+
+      if (sortBy === "high-to-low") {
+        return b.today - a.today;
+      }
+
+      if (sortBy === "name") {
+        return a.nameBn.localeCompare(b.nameBn, "bn");
+      }
+
+      return 0;
+    });
 
   return (
     <section id="products" className="mx-auto max-w-7xl px-5 py-8">
@@ -27,61 +44,90 @@ export default function ProductSection({ products, categories }) {
       </h2>
 
       <p className="mt-2 text-gray-500">
-        Search and filter grocery products.
+        Search, filter and sort grocery products.
       </p>
 
-      <input
-        type="text"
-        placeholder="Search products..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="mt-6 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-green-600"
-      />
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-green-600"
+        />
+
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-green-600"
+        >
+          <option value="default">Sort: Default</option>
+          <option value="low-to-high">Price: Low to High</option>
+          <option value="high-to-low">Price: High to Low</option>
+          <option value="name">Name: A to Z</option>
+        </select>
+      </div>
 
       <div className="my-5 flex flex-wrap gap-2">
         <button
-  type="button"
-  onClick={() => {
-    setSelectedCategory("all");
-    setSearch("");
-  }}
-  className={`rounded-full px-4 py-2 text-sm font-semibold ${
-    selectedCategory === "all"
-      ? "bg-green-700 text-white"
-      : "bg-white text-gray-700"
-  }`}
->
-  All Products
-</button>
+          type="button"
+          onClick={() => {
+            setSelectedCategory("all");
+            setSearch("");
+          }}
+          className={`rounded-full px-4 py-2 text-sm font-semibold ${
+            selectedCategory === "all"
+              ? "bg-green-700 text-white"
+              : "bg-white text-gray-700"
+          }`}
+        >
+          All Products
+        </button>
 
-        {categories.map((category) => (
-          <button
-            key={category.slug || category.id || category.name}
-            onClick={() =>
-              setSelectedCategory(category.slug || category.id)
-            }
-            className={`rounded-full px-4 py-2 text-sm font-semibold ${
-              selectedCategory === (category.slug || category.id)
-                ? "bg-green-700 text-white"
-                : "bg-white text-gray-700"
-            }`}
-          >
-            {category.icon || "🛒"} {category.nameBn}
-          </button>
-        ))}
+        {categories.map((category) => {
+          const categoryId = category.slug || category.id;
+
+          return (
+            <button
+              type="button"
+              key={categoryId}
+              onClick={() => setSelectedCategory(categoryId)}
+              className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                selectedCategory === categoryId
+                  ? "bg-green-700 text-white"
+                  : "bg-white text-gray-700"
+              }`}
+            >
+              {category.icon || "🛒"} {category.nameBn}
+            </button>
+          );
+        })}
       </div>
+
+      <p className="mb-4 text-sm text-gray-500">
+        Showing {filteredProducts.length} products
+      </p>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {filteredProducts.map((product) => (
-          <div key={product.id} className="rounded-xl bg-white p-5 shadow">
+          <div
+            key={product.id}
+            className="rounded-xl bg-white p-5 shadow transition hover:shadow-md"
+          >
             <span className="text-4xl">{product.image}</span>
-            <h3 className="mt-4 text-lg font-bold">{product.nameBn}</h3>
+
+            <h3 className="mt-4 text-lg font-bold">
+              {product.nameBn}
+            </h3>
+
             <p className="mt-2 text-2xl font-bold text-green-700">
               ৳{product.today}
             </p>
+
             <p className="mt-2 text-sm text-gray-500">
               Yesterday: ৳{product.yesterday}
             </p>
+
             <p className="mt-2 text-sm">
               {product.change?.dir === "up"
                 ? "🔺 Price increased"
@@ -89,9 +135,10 @@ export default function ProductSection({ products, categories }) {
                 ? "🔻 Price decreased"
                 : "➡️ No change"}
             </p>
+
             <Link
               href={`/product/${product.slug}`}
-              className="mt-4 block rounded-lg bg-green-700 py-2 text-center text-white"
+              className="mt-4 block rounded-lg bg-green-700 py-2 text-center text-white hover:bg-green-800"
             >
               View Details
             </Link>
