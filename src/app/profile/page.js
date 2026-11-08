@@ -1,52 +1,16 @@
 
-"use client";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import SignOutButton from "./signout-button";
 
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
-import Link from "next/link";
-
-export default function ProfilePage() {
-  const router = useRouter();
-
-  const { data: session, isPending } = authClient.useSession();
-
-  const handleSignout = async () => {
-    const { error } = await authClient.signOut();
-
-    if (error) {
-      toast.error("Logout failed");
-      return;
-    }
-
-    toast.success("Logged out successfully!");
-    router.push("/signin");
-    router.refresh();
-  };
-
-  if (isPending) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Loading profile...</p>
-      </div>
-    );
-  }
+export default async function ProfilePage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
   if (!session) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Please Sign In</h1>
-        <p className="text-gray-500">
-          You need to login to view your profile.
-        </p>
-        <Link
-          href="/signin"
-          className="rounded-lg bg-green-600 px-6 py-3 text-white"
-        >
-          Sign In
-        </Link>
-      </div>
-    );
+    redirect("/signin");
   }
 
   return (
@@ -68,12 +32,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <button
-          onClick={handleSignout}
-          className="mt-8 w-full rounded-lg bg-red-600 py-3 font-semibold text-white hover:bg-red-700"
-        >
-          Sign Out
-        </button>
+        <SignOutButton />
       </div>
     </main>
   );
