@@ -3,8 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProducts, getCategories } from "@/lib/api";
 
-export const dynamic = "force-dynamic";
-
 export default async function CategoryPage({ params }) {
   const { slug } = await params;
 
