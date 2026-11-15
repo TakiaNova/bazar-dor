@@ -18,15 +18,25 @@ export const auth = betterAuth({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     },
-  },
 
-  account: {
-    accountLinking: {
-      enabled: true,
-      trustedProviders: ["google"],
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
     },
   },
 
+  account: {
+  accountLinking: {
+    enabled: true,
+    trustedProviders: ["google", "github"],
+    requireLocalEmailVerified: false,
+  },
+},
+
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
+
+  baseURL:
+    process.env.BETTER_AUTH_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "http://localhost:3000",
 });

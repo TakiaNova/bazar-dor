@@ -1,15 +1,30 @@
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getProducts } from "@/lib/api";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+
 export const instant = false;
 
 export default async function ProductDetailsPage({ params }) {
-  const { slug } = await params;
-  const products = await getProducts();
+  // Check user login
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
+  if (!session) {
+    redirect("/signin");
+  }
+
+  // Get slug from URL
+  const { slug } = await params;
+
+  // Fetch products and find the selected product
+  const products = await getProducts();
   const product = products.find((item) => item.slug === slug);
 
+  // Show 404 if product does not exist
   if (!product) {
     notFound();
   }
@@ -25,6 +40,7 @@ export default async function ProductDetailsPage({ params }) {
         </Link>
 
         <div className="rounded-2xl bg-white p-6 shadow-md sm:p-10">
+          {/* Product Information */}
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-green-50 text-7xl">
               {product.image || "🛒"}
@@ -45,6 +61,7 @@ export default async function ProductDetailsPage({ params }) {
             </div>
           </div>
 
+          {/* Price Summary */}
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="rounded-xl bg-green-50 p-5">
               <p className="text-sm text-gray-500">Today's Price</p>
@@ -68,6 +85,7 @@ export default async function ProductDetailsPage({ params }) {
             </div>
           </div>
 
+          {/* Price Change */}
           <div className="mt-6 rounded-xl border border-gray-100 p-5">
             <h2 className="text-lg font-bold text-gray-900">
               Price Change
@@ -88,6 +106,7 @@ export default async function ProductDetailsPage({ params }) {
             )}
           </div>
 
+          {/* Market Price Comparison */}
           <div className="mt-8">
             <h2 className="text-2xl font-bold text-gray-900">
               Market Price Comparison

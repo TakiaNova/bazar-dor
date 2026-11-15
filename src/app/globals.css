@@ -1,6 +1,21 @@
 @import "tailwindcss";
 @import "@heroui/styles"; 
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
 
+.price-ticker {
+  animation: ticker-scroll 35s linear infinite;
+}
+
+.price-ticker:hover {
+  animation-play-state: paused;
+}
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -25,3 +40,38 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+
+
+.price-ticker {
+  animation: ticker-scroll 45s linear infinite;
+}
+
+.price-ticker:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+

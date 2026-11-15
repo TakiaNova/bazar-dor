@@ -1,97 +1,97 @@
-
+import UserMenu from "@/components/UserMenu";
 import Link from "next/link";
+import Image from "next/image";
+import { connection } from "next/server";
+
 import { getProducts, getCategories } from "@/lib/api";
-import ProductSection from "./product-section";
 
-export default async function HomePage() {
-  const products = await getProducts();
-  const categories = await getCategories();
+import PriceTicker from "@/components/PriceTicker";
+import HeroSection from "@/components/HeroSection";
+import PriceHighlights from "@/components/PriceHighlights";
+import AllProducts from "@/components/AllProducts";
+import Footer from "@/components/Footer";
 
-  const rising = products.filter(
-    (product) => product.change?.dir === "up"
-  );
+export default async function Home() {
+  await connection();
 
-  const falling = products.filter(
-    (product) => product.change?.dir === "down"
-  );
+  const [products, categories] = await Promise.all([
+    getProducts(),
+    getCategories(),
+  ]);
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-white shadow-sm">
+    <main className="min-h-screen bg-[#eef5ef] text-[#202820]">
+      {/* Header */}
+      <header className="bg-[#f8fcf8]">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <Link href="/" className="text-2xl font-bold text-green-700">
-            🛒 Bazar Dor
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-700">
+              <Image
+                src="/logo-icon.png"
+                alt="বাজার দর"
+                width={36}
+                height={36}
+                priority
+                className="h-9 w-9 object-contain"
+              />
+            </div>
+
+            <div>
+  <h1 className="text-xl font-extrabold text-[#202820]">
+    বাজার দর
+  </h1>
+
+  <p className="text-xs text-gray-500">
+    {new Intl.DateTimeFormat("bn-BD", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date())}
+  </p>
+</div>
           </Link>
 
-          <div className="flex gap-4 text-sm font-medium">
-            <Link href="/">Home</Link>
-            <Link href="/profile">Profile</Link>
-            <Link href="/signin">Sign In</Link>
-            <Link href="/signup">Sign Up</Link>
-          </div>
+          {/* User Menu - dropdown will be added separately */}
+          <UserMenu />
         </div>
-      </nav>
+
+        {/* Categories directly below logo/header */}
+        <div className="border-t border-green-100">
+          <nav className="mx-auto flex max-w-7xl gap-7 overflow-x-auto px-5 py-3">
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                href={`/category/${category.slug}`}
+                className="flex shrink-0 items-center gap-2 text-sm font-semibold text-gray-700 transition hover:text-green-700"
+              >
+                <span>{category.icon}</span>
+                <span>{category.nameBn}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      {/* Market Price Ticker */}
+      <PriceTicker products={products} />
 
       {/* Hero */}
-      <section className="bg-green-800 px-5 py-16 text-center text-white">
-        <h1 className="text-4xl font-bold md:text-5xl">
-          Know Your Market. Save Your Money.
-        </h1>
+      <HeroSection />
 
-        <p className="mx-auto mt-4 max-w-2xl text-green-100">
-          Track daily grocery prices, compare markets and make smarter
-          shopping decisions.
-        </p>
+      {/* Increased and decreased price sections */}
+      <PriceHighlights products={products} />
 
-        <a
-          href="#products"
-          className="mt-7 inline-block rounded-lg bg-white px-7 py-3 font-semibold text-green-800"
-        >
-          Explore Products
-        </a>
+      {/* All Products */}
+      <section id="products">
+        <AllProducts
+          products={products}
+          categories={categories}
+        />
       </section>
 
-      {/* Statistics */}
-      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-5 py-10 sm:grid-cols-3">
-        <div className="rounded-xl bg-white p-6 text-center shadow">
-          <p className="text-3xl font-bold">{products.length}</p>
-          <p className="mt-2 text-gray-500">Total Products</p>
-        </div>
-
-        <div className="rounded-xl bg-white p-6 text-center shadow">
-          <p className="text-3xl font-bold text-red-600">
-            {rising.length}
-          </p>
-          <p className="mt-2 text-gray-500">Prices Increased</p>
-        </div>
-
-        <div className="rounded-xl bg-white p-6 text-center shadow">
-          <p className="text-3xl font-bold text-green-600">
-            {falling.length}
-          </p>
-          <p className="mt-2 text-gray-500">Prices Decreased</p>
-        </div>
-      </section>
-
-      {/* Product Search and Category Filter */}
-      <ProductSection
-        products={products}
-        categories={categories}
-      />
-
-      {/* Footer */}
-      <footer className="mt-12 bg-gray-900 px-5 py-8 text-center text-gray-300">
-        <h2 className="text-xl font-bold text-white">Bazar Dor</h2>
-
-        <p className="mt-2 text-sm">
-          Smarter shopping starts with better price information.
-        </p>
-
-        <p className="mt-4 text-xs text-gray-500">
-          © 2026 Bazar Dor. All rights reserved.
-        </p>
-      </footer>
+      <Footer />
     </main>
   );
 }
+      
