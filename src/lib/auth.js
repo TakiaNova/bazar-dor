@@ -1,9 +1,8 @@
 
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
-import clientPromise from "./mongodb";
+import client from "./mongodb";
 
-const client = await clientPromise;
 const db = client.db("bazar_dor");
 
 export const auth = betterAuth({
@@ -26,12 +25,12 @@ export const auth = betterAuth({
   },
 
   account: {
-  accountLinking: {
-    enabled: true,
-    trustedProviders: ["google", "github"],
-    requireLocalEmailVerified: false,
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "github"],
+      requireLocalEmailVerified: false,
+    },
   },
-},
 
   secret: process.env.BETTER_AUTH_SECRET,
 
